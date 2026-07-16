@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+import { getAreaIcon } from '../lib/icons';
+
+interface Props {
+  title: string;
+  description?: string;
+  date: Date;
+  tags?: string[];
+  area: string;
+  slug: string;
+}
+
+const { title, description, date, tags, area, slug } = Astro.props;
+const areaIcon = getAreaIcon(area);
+
+const formatDate = (d: Date) => {
+  return new Date(d).toLocaleDateString('es', {
+    month: 'short',
+    day: 'numeric'
+  });
+};
+---
+
+<a href={`/${slug}`} class="note-card">
+  <div class="card-header">
+    <svg class="card-icon" style="color: {areaIcon.color}" set:html={areaIcon.svg}></svg>
+    <time class="card-date">{formatDate(date)}</time>
+  </div>
+
+  <h3 class="card-title">{title}</h3>
+
+  {description && (
+    <p class="card-description">{description}</p>
+  )}
+
+  {tags && tags.length > 0 && (
+    <div class="card-tags">
+      {tags.slice(0, 3).map(tag => (
+        <span class="tag">#{tag}</span>
+      ))}
+      {tags.length > 3 && (
+        <span class="tag-more">+{tags.length - 3}</span>
+      )}
+    </div>
+  )}
+</a>

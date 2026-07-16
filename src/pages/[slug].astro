@@ -1,0 +1,205 @@
+---
+import { getCollection, render } from 'astro:content';
+import '../styles/global.css';
+import { getAreaIcon } from '../lib/icons';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('atlas', ({ data }) => !data.draft);
+  return notes.map(note => ({
+    params: { slug: note.id },
+    props: { entry: note },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { data } = entry;
+
+const formatDate = (date: Date) => new Date(date).toLocaleDateString('es', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{data.title} | Atlas</title>
+  <script is:inline>
+    // Dark mode toggle - load saved preference or system default
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        // auto: remove attribute to use system preference
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'auto';
+    applyTheme(savedTheme);
+  </script>
+</head>
+<body>
+  <header style="border-bottom: 1px solid var(--border); padding: var(--space-6) 0;">
+    <div class="wrap">
+      <a href="/" style="color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-4); display: inline-block;">← Atlas</a>
+    </div>
+  </header>
+
+  <main class="wrap" style="max-width: 800px; margin: 0 auto; padding: var(--space-12) var(--space-6);">
+    <div style="margin-bottom: var(--space-6);">
+      <span style="display: inline-block; padding: 0.5rem 1rem; background: var(--bg-sunken); border-radius: var(--radius-md); font-size: var(--text-sm); margin-bottom: var(--space-4); display: flex; align-items: center; gap: 0.5rem;">
+        <svg style="width: 1.25rem; height: 1.25rem; color: {getAreaIcon(data.area).color};" set:html={getAreaIcon(data.area).svg}></svg>
+        {data.area}
+      </span>
+      <time style="display: block; color: var(--text-muted); font-size: var(--text-sm);">{formatDate(data.date)}</time>
+    </div>
+
+    <h1 style="margin-bottom: var(--space-6);">{data.title}</h1>
+
+    {data.description && (
+      <p style="font-size: var(--text-lg); color: var(--text-muted); margin-bottom: var(--space-8); line-height: 1.7;">
+        {data.description}
+      </p>
+    )}
+
+    {data.tags && data.tags.length > 0 && (
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-8);">
+        {data.tags.map(tag => (
+          <span style="font-size: var(--text-xs); padding: 0.25rem 0.75rem; background: var(--bg-sunken); border-radius: 999px;">
+            #{tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <article style="line-height: 1.8; margin-bottom: var(--space-12);">
+      <Content />
+    </article>
+
+    {(data.relatedConcepts?.length || data.courses?.length || data.books?.length || data.projects?.length) && (
+      <section style="padding-top: var(--space-8); border-top: 1px solid var(--border);">
+        <h2>Conexiones</h2>
+
+        {data.relatedConcepts?.length > 0 && (
+          <div style="margin-bottom: var(--space-8);">
+            <br>
+            <h3 style="font-size: var(--text-base); margin-bottom: var(--space-4);">Conceptos relacionados</h3>
+            <ul style="list-style: circle; display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-8);">
+              {data.relatedConcepts.map(concept => (
+                <li>
+                  <a href={`/${concept.toLowerCase().replace(/\s+/g, '-')}`} style="color: var(--text);">
+                    {concept}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {data.courses?.length > 0 && (
+          <div style="margin-bottom: var(--space-8);">
+            <h3 style="font-size: var(--text-base); margin-bottom: var(--space-4);">Cursos</h3>
+            <ul style="list-style: circle; display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-8);">
+              {data.courses.map((course: any) => (
+                <li>
+                  {course.link ? (
+                    <a href={course.link} target="_blank" rel="noopener">{course.name} ↗</a>
+                  ) : (
+                    <span>{course.name}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {data.books?.length > 0 && (
+          <div style="margin-bottom: var(--space-8);">
+            <h3 style="font-size: var(--text-base); margin-bottom: var(--space-4);">Libros</h3>
+            <ul style="list-style: circle; display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-8);">
+              {data.books.map((book: any) => (
+                <li>
+                  {book.link ? (
+                    <a href={book.link} target="_blank" rel="noopener">{book.title} {book.author && `• ${book.author}`} ↗</a>
+                  ) : (
+                    <span>{book.title} {book.author && `• ${book.author}`}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {data.projects?.length > 0 && (
+          <div>
+            <h3 style="font-size: var(--text-base); margin-bottom: var(--space-4);">Proyectos</h3>
+            <ul style="list-style: circle; display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-8);">
+              {data.projects.map((project: any) => (
+                <li>
+                  <a href={project.link} target="_blank" rel="noopener">{project.name} ↗</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    )}
+  </main>
+
+  <style is:global>
+    article h2 {
+      font-size: var(--text-2xl);
+      margin: var(--space-8) 0 var(--space-4) 0;
+    }
+
+    article h3 {
+      font-size: var(--text-lg);
+      margin: var(--space-6) 0 var(--space-3) 0;
+    }
+
+    article p {
+      margin-bottom: var(--space-4);
+    }
+
+    article code {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    article pre {
+      background: var(--bg-sunken);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      margin: var(--space-4) 0;
+    }
+
+    article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-4) 0;
+    }
+
+    article th, article td {
+      border: 1px solid var(--border);
+      padding: var(--space-3);
+      text-align: left;
+    }
+
+    article th {
+      background: var(--bg-sunken);
+      font-weight: 600;
+    }
+
+    article img {
+      border-radius: var(--radius-sm);
+      margin: var(--space-4) 0;
+    }
+  </style>
+</body>
+</html>

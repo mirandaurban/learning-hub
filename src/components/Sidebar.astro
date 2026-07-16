@@ -1,0 +1,115 @@
+---
+import '../styles/global.css';
+import { getAreaIcon } from '../lib/icons';
+
+interface SidebarProps {
+  areas: Record<string, { color: string }> | string[];
+  notesByArea: Record<string, any[]>;
+}
+
+const { areas, notesByArea } = Astro.props;
+---
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="logo">Atlas</a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/" class="nav-item">Dashboard</a>
+    
+    <div class="nav-section">
+      <h4>Áreas</h4>
+      {Object.entries(areas).map(([area, _]) => {
+        const areaIcon = getAreaIcon(area);
+        return (
+          notesByArea[area]?.length > 0 && (
+            <a
+              href={`#${area.toLowerCase().replace(/\s+/g, '-')}`}
+              class="nav-item nav-area"
+            >
+              <svg style="width: 1.25rem; height: 1.25rem; color: {areaIcon.color};" set:html={areaIcon.svg}></svg>
+              <span>{area}</span>
+              <span class="count">{notesByArea[area].length}</span>
+            </a>
+          )
+        );
+      })}
+    </div>
+  </nav>
+</aside>
+
+<style>
+  .sidebar {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-header {
+    margin-bottom: 2rem;
+  }
+
+  .logo {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .nav-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text);
+  }
+
+  .nav-section {
+    margin-top: 1.5rem;
+  }
+
+  .nav-section h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-area {
+    font-size: 0.85rem;
+  }
+
+  .count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    background: var(--accent);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+  }
+</style>
+
+---

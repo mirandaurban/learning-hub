@@ -1,0 +1,30 @@
+---
+import '../styles/global.css';
+
+interface TagCloudProps {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+<section class="tag-cloud">
+  <h2>Explorar por tag</h2>
+  <div class="tags">
+    {tags.map(tag => (
+      <button
+        class="tag-button"
+        data-tag={tag}
+        onclick={`
+          const search = document.getElementById('atlas-search');
+          if (search) {
+            search.value = '#${tag}';
+            search.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        `}
+      >
+        #{tag}
+      </button>
+    ))}
+  </div>
+</section>

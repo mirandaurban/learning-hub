@@ -1,0 +1,245 @@
+---
+import { getCollection } from 'astro:content';
+import '../styles/global.css';
+import { getAreaIcon } from '../lib/icons';
+
+const allNotes = await getCollection('atlas', ({ data }) => !data.draft);
+
+const notesByArea: Record<string, typeof allNotes> = {
+  'Filosofía': [],
+  'Computer Science': [],
+  'Machine Learning': [],
+  'Matemáticas': [],
+  'Geopolítica': [],
+  'Apuntes Tec': [],
+  'Biología': [],
+  'Economía': [],
+  'Otros': []
+};
+
+allNotes.forEach(note => notesByArea[note.data.area].push(note));
+Object.values(notesByArea).forEach(group => group.sort((a, b) => b.data.date.getTime() - a.data.date.getTime()));
+
+const allTags = new Set<string>();
+allNotes.forEach(note => note.data.tags?.forEach(tag => allTags.add(tag)));
+
+const formatDate = (date: Date) => new Date(date).toLocaleDateString('es', { month: 'short', day: 'numeric' });
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas</title>
+  <script is:inline>
+    // Dark mode toggle - load saved preference or system default
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        // auto: remove attribute to use system preference
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'auto';
+    applyTheme(savedTheme);
+
+    // Theme toggle button
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const current = localStorage.getItem('theme') || 'auto';
+      let next = current === 'light' ? 'dark' : current === 'dark' ? 'auto' : 'light';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+      document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️' : next === 'light' ? '🌙' : '🌗';
+    });
+
+    // Update emoji on load
+    const currentTheme = localStorage.getItem('theme') || 'auto';
+    document.getElementById('theme-toggle').textContent = currentTheme === 'dark' ? '☀️' : currentTheme === 'light' ? '🌙' : '🌗';
+  </script>
+</head>
+
+<body>
+  <header style="border-bottom: 1px solid var(--border); padding: var(--space-6) 0;">
+    <div class="wrap" style="display: flex; justify-content: space-between; align-items: center;">
+      <h1 style="font-size: var(--text-2xl);">
+        <svg width="24" height="24" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 23L27.5 16V57C27.5 57.3282 27.5632 57.6416 27.6782 57.9287L10 65V23Z" fill="currentColor" />
+          <path d="M47.5 64L32.3218 57.9287C32.4368 57.6416 32.5 57.3282 32.5 57V16L47.6782 22.0713C47.5632 22.3584 47.5 22.6718 47.5 23V64Z" fill="currentColor" />
+          <path d="M52.5 64L70 57V15L52.3218 22.0713C52.4368 22.3584 52.5 22.6718 52.5 23V64Z" fill="currentColor" />
+        </svg>
+        &nbsp; Atlas
+      </h1>
+      <button id="theme-toggle" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🌙</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Search -->
+    <div style="margin: var(--space-12) 0;">
+      <input
+        type="search"
+        id="search"
+        placeholder="Buscar notas..."
+        style="
+          width: 100%;
+          padding: var(--space-4);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          font-family: var(--font-body);
+          font-size: var(--text-base);
+          background: var(--bg-elevated);
+          color: var(--text);
+        "
+      />
+    </div>
+
+    <!-- Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-12);">
+      <div style="padding: var(--space-6); background: var(--bg-elevated); border-radius: var(--radius-md);">
+        <div style="font-size: var(--text-3xl); font-weight: 700;">{allNotes.length}</div>
+        <div style="font-size: var(--text-sm); color: var(--text-muted);">Notas</div>
+      </div>
+      <div style="padding: var(--space-6); background: var(--bg-elevated); border-radius: var(--radius-md);">
+        <div style="font-size: var(--text-3xl); font-weight: 700;">{Object.keys(notesByArea).filter(a => notesByArea[a].length > 0).length}</div>
+        <div style="font-size: var(--text-sm); color: var(--text-muted);">Áreas</div>
+      </div>
+      <div style="padding: var(--space-6); background: var(--bg-elevated); border-radius: var(--radius-md);">
+        <div style="font-size: var(--text-3xl); font-weight: 700;">{allTags.size}</div>
+        <div style="font-size: var(--text-sm); color: var(--text-muted);">Tópicos</div>
+      </div>
+    </div>
+
+    <!-- Areas -->
+    {Object.entries(notesByArea).map(([area, notes]) => (
+      notes.length > 0 && (
+        <section style="margin-bottom: var(--space-16);">
+          <h2 style="margin-bottom: var(--space-8); display: flex; align-items: center; gap: var(--space-4);">
+            <svg style="width: 1.5rem; height: 1.5rem; color: {getAreaIcon(area).color};" set:html={getAreaIcon(area).svg}></svg>
+            {area}
+          </h2>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-6);">
+            {notes.map(note => (
+              <a href={`/${note.id}`} style="
+                display: block;
+                padding: var(--space-6);
+                background: var(--bg-elevated);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                text-decoration: none;
+                transition: all var(--transition);
+              " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px var(--shadow)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                  <svg style="width: 1.25rem; height: 1.25rem; color: {getAreaIcon(area).color};" set:html={getAreaIcon(area).svg}></svg>
+                  <time style="font-size: var(--text-sm); color: var(--text-muted);">{formatDate(note.data.date)}</time>
+                </div>
+
+                <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2); color: var(--text);">{note.data.title}</h3>
+
+                {note.data.description && (
+                  <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-4); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {note.data.description}
+                  </p>
+                )}
+
+                {note.data.tags && note.data.tags.length > 0 && (
+                  <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {note.data.tags.slice(0, 3).map(tag => (
+                      <span style="font-size: var(--text-xs); padding: 0.25rem 0.75rem; background: var(--bg-sunken); border-radius: 999px; color: var(--text-muted);">
+                        #{tag}
+                      </span>
+                    ))}
+                    {note.data.tags.length > 3 && (
+                      <span style="font-size: var(--text-xs); color: var(--text-muted);">
+                        +{note.data.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    ))}
+
+    <!-- Tag cloud -->
+    {allTags.size > 0 && (
+      <section style="margin-top: var(--space-16); padding-top: var(--space-12); padding-bottom: var(--space-12); border-top: 1px solid var(--border);">
+        <h3 style="margin-bottom: var(--space-6);">Explorar por tag</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-3);">
+          {Array.from(allTags).sort().map(tag => (
+            <button
+              data-tag={tag}
+              style="
+                padding: 0.5rem 1rem;
+                background: var(--bg-elevated);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                cursor: pointer;
+                font-family: var(--font-body);
+                color: var(--text-muted);
+                transition: all var(--transition);
+              "
+              onmouseover="this.style.background='var(--c-cs)'; this.style.color='white'; this.style.borderColor='var(--c-cs)';"
+              onmouseout="this.style.background='var(--bg-elevated)'; this.style.color='var(--text-muted)'; this.style.borderColor='var(--border)';"
+              onclick={`
+                const search = document.getElementById('search');
+                search.value = '#${tag}';
+                search.dispatchEvent(new Event('input', { bubbles: true }));
+              `}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+
+  <script>
+    // Search + filter
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = (e.target as HTMLInputElement).value.toLowerCase();
+      const cards = document.querySelectorAll('a[href^="/"]');
+      const sections = document.querySelectorAll('section');
+
+      sections.forEach(section => {
+        let visible = false;
+        const sectionCards = section.querySelectorAll('a[href^="/"]');
+
+        sectionCards.forEach(card => {
+          const title = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+          const desc = card.querySelector('p')?.textContent?.toLowerCase() || '';
+          const tags = Array.from(card.querySelectorAll('span')).map(s => s.textContent?.toLowerCase()).join(' ');
+
+          const matches = title.includes(query) || desc.includes(query) || tags.includes(query);
+          (card as HTMLElement).style.display = matches ? 'block' : 'none';
+          if (matches) visible = true;
+        });
+
+        (section as HTMLElement).style.display = visible ? 'block' : 'none';
+      });
+    });
+
+    // Dark mode toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      (document.getElementById('theme-toggle') as HTMLElement).textContent = next === 'dark' ? '☀️' : '🌙';
+    });
+
+    // Set initial theme button
+    const html = document.documentElement;
+    (document.getElementById('theme-toggle') as HTMLElement).textContent = html.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  </script>
+</body>
+</html>

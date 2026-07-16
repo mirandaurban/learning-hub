@@ -1,0 +1,203 @@
+/* src/styles/global.css */
+/* Copiado de tu digital garden, adaptado para Atlas */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Light mode */
+  --bg: #faf9f6;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #f0eee8;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text: #15151b;
+  --text-muted: #63626c;
+  --border: #e6e3dc;
+  --shadow: rgba(20, 20, 26, 0.08);
+  --accent: #3b82f6;
+
+  /* Atlas colors */
+  --c-cs: #4A6278;
+  --c-cs-soft: #c1d7eb;
+  --c-ml: #be4962;
+  --c-ml-soft: #fce1e7;
+  --c-math: #3D7D72;
+  --c-math-soft: #b6dfd8a1;
+  --c-philosophy: #3f3c69;
+  --c-philosophy-soft: #c2bdff94;
+  --c-other: #C9A96E;
+  --c-other-soft: #fde9c582;
+
+  /* Tipografía */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+  --text-4xl: 3.75rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --max-width: 1180px;
+  --transition: 180ms ease;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #13131a;
+  --bg-elevated: #1c1c25;
+  --bg-sunken: #0e0e13;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text: #f3f2ee;
+  --text-muted: #b1afbb;
+  --border: #2b2b36;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --accent: #60a5fa;
+
+  --c-cs: #8ab4e1;
+  --c-cs-soft: #2a3f5a;
+  --c-ml: #f48a9f;
+  --c-ml-soft: #4a2c35;
+  --c-math: #6ed9c8;
+  --c-math-soft: #1f3d38;
+  --c-philosophy: #a4a0ff;
+  --c-philosophy-soft: #2c2a4a;
+  --c-other: #e8c78f;
+  --c-other-soft: #4a3d2a;
+}
+
+/* Auto dark mode: if no explicit data-theme is set, use system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg: #13131a;
+    --bg-elevated: #1c1c25;
+    --bg-sunken: #0e0e13;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text: #f3f2ee;
+    --text-muted: #b1afbb;
+    --border: #2b2b36;
+    --shadow: rgba(0, 0, 0, 0.45);
+    --accent: #60a5fa;
+
+    --c-cs: #8ab4e1;
+    --c-cs-soft: #2a3f5a;
+    --c-ml: #f48a9f;
+    --c-ml-soft: #4a2c35;
+    --c-math: #6ed9c8;
+    --c-math-soft: #1f3d38;
+    --c-philosophy: #a4a0ff;
+    --c-philosophy-soft: #2c2a4a;
+    --c-other: #e8c78f;
+    --c-other-soft: #4a3d2a;
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit light mode */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition), color var(--transition);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.wrap {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --text-4xl: 2.5rem;
+    --text-3xl: 2rem;
+    --text-2xl: 1.5rem;
+  }
+}
